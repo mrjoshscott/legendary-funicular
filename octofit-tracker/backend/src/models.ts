@@ -1,5 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
 
+// Define the User schema
 const userSchema = new Schema(
   {
     name: { type: String, required: true },
