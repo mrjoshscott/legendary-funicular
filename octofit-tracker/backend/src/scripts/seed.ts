@@ -1,4 +1,4 @@
-import { connectToDatabase } from '../db';
+import { connectToDatabase } from '../database';
 import { Activity, LeaderboardEntry, Team, User, Workout } from '../models';
 
 // Seed the octofit_db database with test data.
