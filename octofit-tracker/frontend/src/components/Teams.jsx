@@ -8,15 +8,22 @@ export default function Teams() {
   useEffect(() => {
     async function loadTeams() {
       try {
+        setError('');
         const response = await fetch(buildApiUrl('teams'));
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setTeams(data);
-        } else if (data && Array.isArray(data.results)) {
-          setTeams(data.results);
-        } else {
-          setTeams([]);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
         }
+
+        const data = await response.json();
+        const nextTeams = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : Array.isArray(data?.items)
+              ? data.items
+              : [];
+
+        setTeams(nextTeams);
       } catch (err) {
         setError(err.message || 'Unable to load teams');
       }
@@ -29,13 +36,17 @@ export default function Teams() {
     <section>
       <h2>Teams</h2>
       {error ? <div className="alert alert-danger">{error}</div> : null}
-      <ul className="list-group">
-        {teams.map((team) => (
-          <li className="list-group-item" key={team._id || team.id}>
-            <strong>{team.name}</strong> — {team.sport || 'Team'}
-          </li>
-        ))}
-      </ul>
+      {teams.length === 0 ? (
+        <p className="text-muted">No teams available yet.</p>
+      ) : (
+        <ul className="list-group">
+          {teams.map((team) => (
+            <li className="list-group-item" key={team._id || team.id || team.name}>
+              <strong>{team.name}</strong> — {team.sport || 'Team'}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

@@ -1,8 +1,9 @@
 export function buildApiUrl(resource) {
-  const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
-  const baseUrl = codespaceName
-    ? `https://${codespaceName}-8000.app.github.dev/api/${resource}/`
-    : `http://localhost:8000/api/${resource}/`;
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
 
-  return baseUrl;
+  if (codespaceName) {
+    return `https://${codespaceName}-8000.app.github.dev/api/${resource}/`;
+  }
+
+  return `http://localhost:8000/api/${resource}/`;
 }

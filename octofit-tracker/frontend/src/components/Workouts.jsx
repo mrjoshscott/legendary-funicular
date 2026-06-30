@@ -8,15 +8,22 @@ export default function Workouts() {
   useEffect(() => {
     async function loadWorkouts() {
       try {
+        setError('');
         const response = await fetch(buildApiUrl('workouts'));
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setWorkouts(data);
-        } else if (data && Array.isArray(data.results)) {
-          setWorkouts(data.results);
-        } else {
-          setWorkouts([]);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
         }
+
+        const data = await response.json();
+        const nextWorkouts = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : Array.isArray(data?.items)
+              ? data.items
+              : [];
+
+        setWorkouts(nextWorkouts);
       } catch (err) {
         setError(err.message || 'Unable to load workouts');
       }
@@ -29,13 +36,17 @@ export default function Workouts() {
     <section>
       <h2>Workouts</h2>
       {error ? <div className="alert alert-danger">{error}</div> : null}
-      <ul className="list-group">
-        {workouts.map((workout) => (
-          <li className="list-group-item" key={workout._id || workout.id}>
-            <strong>{workout.title}</strong> — {workout.difficulty} • {workout.duration} min
-          </li>
-        ))}
-      </ul>
+      {workouts.length === 0 ? (
+        <p className="text-muted">No workouts available yet.</p>
+      ) : (
+        <ul className="list-group">
+          {workouts.map((workout) => (
+            <li className="list-group-item" key={workout._id || workout.id || workout.title}>
+              <strong>{workout.title}</strong> — {workout.difficulty} • {workout.duration} min
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

@@ -8,15 +8,22 @@ export default function Users() {
   useEffect(() => {
     async function loadUsers() {
       try {
+        setError('');
         const response = await fetch(buildApiUrl('users'));
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setUsers(data);
-        } else if (data && Array.isArray(data.results)) {
-          setUsers(data.results);
-        } else {
-          setUsers([]);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
         }
+
+        const data = await response.json();
+        const nextUsers = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : Array.isArray(data?.items)
+              ? data.items
+              : [];
+
+        setUsers(nextUsers);
       } catch (err) {
         setError(err.message || 'Unable to load users');
       }
@@ -29,13 +36,17 @@ export default function Users() {
     <section>
       <h2>Users</h2>
       {error ? <div className="alert alert-danger">{error}</div> : null}
-      <ul className="list-group">
-        {users.map((user) => (
-          <li className="list-group-item" key={user._id || user.id}>
-            <strong>{user.name}</strong> — {user.email} ({user.role})
-          </li>
-        ))}
-      </ul>
+      {users.length === 0 ? (
+        <p className="text-muted">No users available yet.</p>
+      ) : (
+        <ul className="list-group">
+          {users.map((user) => (
+            <li className="list-group-item" key={user._id || user.id || user.email}>
+              <strong>{user.name}</strong> — {user.email} ({user.role})
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
